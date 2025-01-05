@@ -1,5 +1,5 @@
 package scrape
 
 type scraper interface {
-	Scrape() error
+	Scrape(targetUrl string) error
 }
