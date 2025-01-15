@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"kindExport/internal/config"
 	"kindExport/internal/scrape"
 	"sync"
 
@@ -46,7 +47,17 @@ func InsertBook(book scrape.Book) {
 
 // initDB creates the initial database connection
 func initDB() (*sql.DB, error) {
-	db, err := sql.Open("sqlite", "./kindExport.sqlite")
+	cfg, err := config.GetConfig()
+	if err != nil {
+		return nil, err
+	}
+	db, err := sql.Open("sqlite", cfg.DatabasePath)
+
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = db.Exec("PRAGMA journal_mode=WAL;")
 	if err != nil {
 		return nil, err
 	}
