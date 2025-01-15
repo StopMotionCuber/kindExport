@@ -35,8 +35,8 @@ func InsertBook(book scrape.Book) {
 	_ = db
 
 	_, err = Articles.
-		INSERT(Articles.Title, Articles.LocalPath, Articles.URL, Articles.Paid, Articles.Author).
-		VALUES(book.Book.Title(), book.Path, book.Permalink, book.Paid, book.Book.Author()).
+		INSERT(Articles.Title, Articles.LocalPath, Articles.URL, Articles.Paid, Articles.Author, Articles.ReleaseDate).
+		VALUES(book.Book.Title(), book.Path, book.Permalink, book.Paid, book.Book.Author(), book.ReleaseDate).
 		Exec(db)
 
 	if err != nil {

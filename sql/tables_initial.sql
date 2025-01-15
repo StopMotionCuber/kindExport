@@ -1,4 +1,4 @@
-create table users
+create table if not exists users
 (
     id                integer primary key,
     name              varchar   not null,
@@ -9,19 +9,20 @@ create table users
     kindle_mail       varchar
 );
 
-create table articles
+create table if not exists articles
 (
-    id         integer primary key,
-    title      varchar   not null,
-    author     varchar   not null,
-    url        varchar   not null unique,
-    local_path varchar   not null,
-    created_at timestamp not null default current_timestamp,
-    paid       boolean   not null default false,
+    id           integer primary key,
+    title        varchar   not null,
+    author       varchar   not null,
+    url          varchar   not null unique,
+    release_date timestamp not null,
+    local_path   varchar   not null,
+    created_at   timestamp not null default current_timestamp,
+    paid         boolean   not null default false,
     unique (title, author)
 );
 
-create table user_articles
+create table if not exists user_articles
 (
     id         integer primary key,
     user_id    integer not null,

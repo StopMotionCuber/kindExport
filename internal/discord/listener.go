@@ -46,5 +46,4 @@ func (l Listener) Listen() {
 	signal.Notify(stop, os.Interrupt)
 	log.Println("Bot is running, use Ctrl+C to exit")
 	<-stop
-
 }

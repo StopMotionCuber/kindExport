@@ -12,11 +12,12 @@ import (
 )
 
 type Articles struct {
-	ID        *int32 `sql:"primary_key"`
-	Title     string
-	Author    string
-	URL       string
-	LocalPath string
-	CreatedAt time.Time
-	Paid      bool
+	ID          *int32 `sql:"primary_key"`
+	Title       string
+	Author      string
+	URL         string
+	ReleaseDate time.Time
+	LocalPath   string
+	CreatedAt   time.Time
+	Paid        bool
 }

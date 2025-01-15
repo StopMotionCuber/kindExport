@@ -17,13 +17,14 @@ type articlesTable struct {
 	sqlite.Table
 
 	// Columns
-	ID        sqlite.ColumnInteger
-	Title     sqlite.ColumnString
-	Author    sqlite.ColumnString
-	URL       sqlite.ColumnString
-	LocalPath sqlite.ColumnString
-	CreatedAt sqlite.ColumnTimestamp
-	Paid      sqlite.ColumnBool
+	ID          sqlite.ColumnInteger
+	Title       sqlite.ColumnString
+	Author      sqlite.ColumnString
+	URL         sqlite.ColumnString
+	ReleaseDate sqlite.ColumnTimestamp
+	LocalPath   sqlite.ColumnString
+	CreatedAt   sqlite.ColumnTimestamp
+	Paid        sqlite.ColumnBool
 
 	AllColumns     sqlite.ColumnList
 	MutableColumns sqlite.ColumnList
@@ -64,28 +65,30 @@ func newArticlesTable(schemaName, tableName, alias string) *ArticlesTable {
 
 func newArticlesTableImpl(schemaName, tableName, alias string) articlesTable {
 	var (
-		IDColumn        = sqlite.IntegerColumn("id")
-		TitleColumn     = sqlite.StringColumn("title")
-		AuthorColumn    = sqlite.StringColumn("author")
-		URLColumn       = sqlite.StringColumn("url")
-		LocalPathColumn = sqlite.StringColumn("local_path")
-		CreatedAtColumn = sqlite.TimestampColumn("created_at")
-		PaidColumn      = sqlite.BoolColumn("paid")
-		allColumns      = sqlite.ColumnList{IDColumn, TitleColumn, AuthorColumn, URLColumn, LocalPathColumn, CreatedAtColumn, PaidColumn}
-		mutableColumns  = sqlite.ColumnList{TitleColumn, AuthorColumn, URLColumn, LocalPathColumn, CreatedAtColumn, PaidColumn}
+		IDColumn          = sqlite.IntegerColumn("id")
+		TitleColumn       = sqlite.StringColumn("title")
+		AuthorColumn      = sqlite.StringColumn("author")
+		URLColumn         = sqlite.StringColumn("url")
+		ReleaseDateColumn = sqlite.TimestampColumn("release_date")
+		LocalPathColumn   = sqlite.StringColumn("local_path")
+		CreatedAtColumn   = sqlite.TimestampColumn("created_at")
+		PaidColumn        = sqlite.BoolColumn("paid")
+		allColumns        = sqlite.ColumnList{IDColumn, TitleColumn, AuthorColumn, URLColumn, ReleaseDateColumn, LocalPathColumn, CreatedAtColumn, PaidColumn}
+		mutableColumns    = sqlite.ColumnList{TitleColumn, AuthorColumn, URLColumn, ReleaseDateColumn, LocalPathColumn, CreatedAtColumn, PaidColumn}
 	)
 
 	return articlesTable{
 		Table: sqlite.NewTable(schemaName, tableName, alias, allColumns...),
 
 		//Columns
-		ID:        IDColumn,
-		Title:     TitleColumn,
-		Author:    AuthorColumn,
-		URL:       URLColumn,
-		LocalPath: LocalPathColumn,
-		CreatedAt: CreatedAtColumn,
-		Paid:      PaidColumn,
+		ID:          IDColumn,
+		Title:       TitleColumn,
+		Author:      AuthorColumn,
+		URL:         URLColumn,
+		ReleaseDate: ReleaseDateColumn,
+		LocalPath:   LocalPathColumn,
+		CreatedAt:   CreatedAtColumn,
+		Paid:        PaidColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

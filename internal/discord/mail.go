@@ -1,14 +1,9 @@
 package discord
 
 import (
-	"bytes"
 	"crypto/tls"
-	"encoding/base64"
-	"fmt"
 	"github.com/wneessen/go-mail"
 	"kindExport/internal/config"
-	"mime/multipart"
-	"net/http"
 	"net/smtp"
 	"strconv"
 )
@@ -49,37 +44,10 @@ func CheckMailConfig() error {
 	return nil
 }
 
-func toBytes(fileContent []byte, fileName string, subject string, toAddr string) []byte {
-	buf := bytes.NewBuffer(nil)
-	buf.WriteString(fmt.Sprintf("Subject: %s\n", subject))
-	buf.WriteString(fmt.Sprintf("To: %s\n", toAddr))
-
-	buf.WriteString("MIME-Version: 1.0\n")
-	writer := multipart.NewWriter(buf)
-	boundary := writer.Boundary()
-	buf.WriteString(fmt.Sprintf("Content-Type: multipart/mixed; boundary=%s\n", boundary))
-	buf.WriteString(fmt.Sprintf("--%s\n", boundary))
-
-	buf.WriteString("See attached for the newsletter article:\n")
-	buf.WriteString(fmt.Sprintf("\n\n--%s\n", boundary))
-	buf.WriteString(fmt.Sprintf("Content-Type: %s\n", http.DetectContentType(fileContent)))
-	buf.WriteString("Content-Transfer-Encoding: base64\n")
-	buf.WriteString(fmt.Sprintf("Content-Disposition: attachment; filename=%s\n", fileName))
-
-	b := make([]byte, base64.StdEncoding.EncodedLen(len(fileContent)))
-	base64.StdEncoding.Encode(b, fileContent)
-	buf.Write(b)
-	buf.WriteString(fmt.Sprintf("\n--%s", boundary))
-	buf.WriteString("--")
-
-	return buf.Bytes()
-}
-
 func sendMail(address string, epubPath string) error {
 	conf, _ := config.GetConfig()
 
 	message := mail.NewMsg()
-	address = "stopmotioncuber@gmail.com"
 	message.From("kindle@sim0ns.de")
 	message.To(address)
 	message.Subject("Your newsletter article is ready")

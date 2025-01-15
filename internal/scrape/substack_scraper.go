@@ -10,18 +10,21 @@ import (
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
+	"google.golang.org/appengine/log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 	"unicode"
 )
 
 type Book struct {
-	Book      *epub.Epub
-	Path      *string
-	Permalink *string
-	Paid      bool
+	Book        *epub.Epub
+	Path        *string
+	Permalink   *string
+	Paid        bool
+	ReleaseDate time.Time
 }
 
 type ArticleEmbeddedImage struct {
@@ -141,6 +144,7 @@ func (s SubstackScraper) Scrape(url *string) (*Book, error) {
 	})
 
 	sectionFound := false
+	releaseDate := time.Now()
 
 	// Next, we parse the HTML content
 	// We are searching for a few elements in the HTML content
@@ -201,13 +205,14 @@ func (s SubstackScraper) Scrape(url *string) (*Book, error) {
 		}
 
 		// Parse releaseDate to time.Time
-		releaseDate, err := time.Parse(time.RFC3339, article.Published)
+		releaseDate, err = time.Parse(time.RFC3339, article.Published)
+
 		if err != nil {
 			return
 		}
 
-		// We want to format the releasedate for 25th Februrary 2025 to "Feb 25, 2025"
-		content = fmt.Sprintf("<h1>%s</h1><p>By %s<em><br/>Published at %s</em></p><hr/>%s", book.Title(), book.Author(), releaseDate.Format("Jan 01, 2006"), content)
+		// We want to format the releasedate for 25th February 2025 to "Feb 25, 2025"
+		content = fmt.Sprintf("<h1>%s</h1><p>By %s<em><br/>Published at %s</em></p><hr/>%s", book.Title(), book.Author(), releaseDate.Format("Jan 02, 2006"), content)
 
 		_, err = book.AddSection(content, book.Title(), fmt.Sprintf("%s.xhtml", normalizeStr(book.Title())), "")
 		if err != nil {
@@ -238,6 +243,14 @@ func (s SubstackScraper) Scrape(url *string) (*Book, error) {
 		return nil, fmt.Errorf("failed to parse the Substack newsletter correctly")
 	}
 
+	// Create output dir if not already existing
+
+	err = os.MkdirAll("output", os.ModePerm)
+	if err != nil {
+		log.Errorf(nil, "Failed to create output directory: %s", err.Error())
+		return nil, err
+	}
+
 	// We can now create an EPUB from the parsed HTML content
 	epubPath := fmt.Sprintf("output/%s.epub", book.Title())
 	err = book.Write(epubPath)
@@ -247,9 +260,10 @@ func (s SubstackScraper) Scrape(url *string) (*Book, error) {
 	}
 
 	return &Book{
-		Book:      book,
-		Path:      &epubPath,
-		Permalink: &permalink,
-		Paid:      !article.Free,
+		Book:        book,
+		Path:        &epubPath,
+		Permalink:   &permalink,
+		Paid:        !article.Free,
+		ReleaseDate: releaseDate,
 	}, nil
 }

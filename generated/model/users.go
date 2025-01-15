@@ -15,7 +15,7 @@ type Users struct {
 	ID               *int32 `sql:"primary_key"`
 	Name             string
 	CreatedAt        time.Time
-	DiscordID        *string
+	DiscordID        string
 	SubstackSession  *string
 	SubstackUsername *string
 	KindleMail       *string

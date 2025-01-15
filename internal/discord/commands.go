@@ -32,7 +32,7 @@ var (
 					Type:        discordgo.ApplicationCommandOptionString,
 					Name:        "address",
 					Description: "The mail address to send the exported epub to.",
-					Required:    true,
+					Required:    false,
 				},
 			},
 		},
@@ -327,7 +327,12 @@ func handleExport(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 func handleMail(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	options := i.ApplicationCommandData().Options
-	address := options[0].StringValue()
+	var address string
+	if options == nil {
+		address = ""
+	} else {
+		address = options[0].StringValue()
+	}
 
 	// Get discord user id
 	userID := i.Interaction.User.ID
@@ -357,6 +362,7 @@ func handleMail(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	dbSession, err := db.GetDB()
 	if err != nil {
+		log.Printf("Error getting database session: %s", err.Error())
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
@@ -368,6 +374,7 @@ func handleMail(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	err = stmt.Query(dbSession, &dest)
 	if err != nil {
+		log.Printf("Error querying user: %s", err.Error())
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
@@ -375,6 +382,26 @@ func handleMail(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			},
 		})
 		return
+	}
+
+	if address == "" {
+		// Return the current mail address
+		if len(dest) == 0 || dest[0].KindleMail == nil {
+			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "Mail address is not set",
+				},
+			})
+			return
+		}
+		address = *dest[0].KindleMail
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Your ebooks are exported to " + address,
+			},
+		})
 	}
 
 	if len(dest) == 0 {
@@ -413,7 +440,7 @@ func handleMail(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: "Mail address has been updated",
+			Content: "Mail address has been updated to " + address,
 		},
 	})
 }
