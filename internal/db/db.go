@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"kindExport/internal/config"
 	"kindExport/internal/scrape"
+	"os"
 	"sync"
 
 	. "kindExport/generated/table"
@@ -58,6 +59,19 @@ func initDB() (*sql.DB, error) {
 	}
 
 	_, err = db.Exec("PRAGMA journal_mode=WAL;")
+	// Check whether we find the initial tables file
+	for _, file := range []string{"./tables_initial.sql", "./sql/tables_initial.sql"} {
+		content, err := os.ReadFile(file)
+		if err != nil {
+			continue
+		}
+		_, err = db.Exec(string(content))
+		if err != nil {
+			return nil, err
+		}
+		break
+	}
+
 	if err != nil {
 		return nil, err
 	}
