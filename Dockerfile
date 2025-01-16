@@ -14,7 +14,7 @@ RUN go mod download
 COPY . .
 
 # Build the Go application
-RUN go build -o kindExport
+RUN CGO_ENABLED=0 go build -o kindExport
 
 # Use a minimal base image for the final image
 FROM alpine:latest
