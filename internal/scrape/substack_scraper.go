@@ -139,6 +139,7 @@ func (s SubstackScraper) Scrape(url *string) (*Book, error) {
 	permalink := *url
 
 	c := colly.NewCollector()
+	s.setCookies(c, *url)
 
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL)
