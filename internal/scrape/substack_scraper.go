@@ -11,6 +11,7 @@ import (
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
 	"google.golang.org/appengine/log"
+	"kindExport/internal/config"
 	"net/http"
 	"net/url"
 	"os"
@@ -244,15 +245,15 @@ func (s SubstackScraper) Scrape(url *string) (*Book, error) {
 	}
 
 	// Create output dir if not already existing
-
-	err = os.MkdirAll("output", os.ModePerm)
+	conf, _ := config.GetConfig()
+	err = os.MkdirAll(fmt.Sprintf("%s/%s", conf.OutputDirectory, book.Title()), os.ModePerm)
 	if err != nil {
 		log.Errorf(nil, "Failed to create output directory: %s", err.Error())
 		return nil, err
 	}
 
 	// We can now create an EPUB from the parsed HTML content
-	epubPath := fmt.Sprintf("output/%s.epub", book.Title())
+	epubPath := fmt.Sprintf("%s/%s.epub", conf.OutputDirectory, book.Title())
 	err = book.Write(epubPath)
 
 	if err != nil {

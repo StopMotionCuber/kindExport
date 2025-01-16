@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 )
 
@@ -11,6 +12,8 @@ import (
 type Config struct {
 	// DatabasePath is the path to the sqlite database
 	DatabasePath string
+	// OutputDirectory is the directory where the output files are stored
+	OutputDirectory string
 	// DiscordToken is the token for the discord bot
 	DiscordToken string
 	// MailServer is the address of the mail server
@@ -34,12 +37,16 @@ func GetConfig() (*Config, error) {
 	if instance == nil {
 		once.Do(func() {
 			instance = &Config{
-				DatabasePath: "./kindExport.sqlite",
-				DiscordToken: "",
-				MailServer:   "",
-				MailPort:     587,
-				MailUser:     "",
-				MailPassword: "",
+				DatabasePath:    "./kindExport.sqlite",
+				OutputDirectory: "./output",
+				DiscordToken:    "",
+				MailServer:      "",
+				MailPort:        587,
+				MailUser:        "",
+				MailPassword:    "",
+			}
+			if os.Getenv("OUTPUT_DIRECTORY") != "" {
+				instance.OutputDirectory = strings.TrimRight(os.Getenv("OUTPUT_DIRECTORY"), "/")
 			}
 			if os.Getenv("DATABASE_PATH") != "" {
 				instance.DatabasePath = os.Getenv("DATABASE_PATH")
