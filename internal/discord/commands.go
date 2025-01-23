@@ -9,6 +9,7 @@ import (
 	"kindExport/internal/scrape"
 	"log"
 	_ "modernc.org/sqlite"
+	"net/http"
 	"net/mail"
 	"net/url"
 	"strings"
@@ -168,6 +169,16 @@ func normalizeUrl(urlValue string) string {
 	return u.String()
 }
 
+func getRedirectedURL(urlValue string) (string, error) {
+	client := http.Client{}
+	resp, err := client.Get(urlValue)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	return resp.Request.URL.String(), nil
+}
+
 func handleExport(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	options := i.ApplicationCommandData().Options
 	urlValue := options[0].StringValue()
@@ -185,6 +196,20 @@ func handleExport(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		})
 		return
 	}
+
+	// Get the redirected URL
+	urlValue, err = getRedirectedURL(urlValue)
+	if err != nil {
+		log.Printf("Error getting redirected URL: %s", err.Error())
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "URL could not be resolved",
+			},
+		})
+		return
+	}
+	urlValue = normalizeUrl(urlValue)
 
 	stmt := sqlite.SELECT(
 		Users.AllColumns,
@@ -219,7 +244,6 @@ func handleExport(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	).LIMIT(1)
 
 	var articles []model.Articles
-	println(stmt.Sql())
 	err = stmt.Query(dbSession, &articles)
 
 	if err != nil {
